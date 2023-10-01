@@ -1,12 +1,14 @@
 package com.example.demo4;
 
 import com.example.demo4.payload.User;
+import org.apache.hc.client5.http.classic.methods.HttpDelete;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
@@ -14,7 +16,6 @@ import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
 import java.io.IOException;
@@ -31,25 +32,6 @@ public class Main {
 
         userMenu();
 
-        /*
-
-        Properties props = new Properties();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "fetchingGroup");
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
-
-
-        Consumer<String, String> consumer = new KafkaConsumer<>(props);
-        consumer.subscribe(Collections.singletonList("your-topic"));
-        */
-
-
-
-        //Hämta data från topic
-        //getDataFromKafka("javaJsonGuides");
-
-        //System.out.println("Project done!");
     }
 
     public static void userMenu() {
@@ -73,7 +55,20 @@ public class Main {
                     getDataFromKafka("javaJsonGuides");
                     break;
                 }
+                case "3":{
+                    addUser();
+                    break;
+                }
+                case "4": {
+                    updateUser();
+                    break;
+                }
+                case "5": {
+                    deleteUser();
+                    break;
+                }
                 case "0": {
+                    System.out.println("Du har valt att avsluta programmet.");
                     break;
                 }
                 default: {
@@ -96,13 +91,16 @@ public class Main {
         System.out.println("------------");
         System.out.println("1. Skriv data till Kafka Server");
         System.out.println("2. Hämta data från Kafka Server");
+        System.out.println("3. Lägg till användare");
+        System.out.println("4. Uppdatera användare");
+        System.out.println("5. Radera användare");
         System.out.println("0. Avsluta");
     }
 
-    public static void userInputForKafka() {
+      public static void userInputForKafka() {
         User user = new User();
 
-        /*Logik flr att låta användaren mata in data*/
+        //Logik flr att låta användaren mata in data//
 
         user.setId(11L);
         user.setFirstName("Cihan");
@@ -113,7 +111,7 @@ public class Main {
         myObj.put("firstName", user.getFirstName());
         myObj.put("lastName", user.getLastName());
 
-        // URL url = new URL("http://localhost:8080/api/v1/kafka/publish");
+
 
         //Skicka Payload till WebAPI via en Request
         sendToWebAPI(myObj);
@@ -148,15 +146,12 @@ public class Main {
         Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "fetchingGroup");
-        //props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
-        //props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
-        //props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.springframework.kafka.support.serializer.JsonDeserializer");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         props.put("spring.json.trusted.packages", "*");
 
         Consumer<String, User> consumer = new KafkaConsumer<>(props);
-        //consumer.subscribe(Collections.singletonList(topicName));
+
         consumer.assign(Collections.singletonList(new TopicPartition(topicName, 0)));
 
         //Gå till början av Topic
@@ -171,18 +166,6 @@ public class Main {
             if (records.isEmpty()) continue;
             for (ConsumerRecord<String, User> record : records) {
                 users.add(record.value());
-                //System.out.println(record.value());
-                //System.out.println(record.value().getClass().toString());
-/*
-                //Spara datan tillbaka till ett JSONObject
-                JSONObject fetchData = (JSONObject) new JSONParser().parse(record.value());
-
-                //Skriva ut data
-                System.out.println(fetchData.get("id"));
-                System.out.println(fetchData.get("firstName"));
-                System.out.println(fetchData.get("lastName"));
-
-*/
             }
             break;
         }
@@ -190,25 +173,115 @@ public class Main {
         for (User user : users) {
             System.out.println(user.getFirstName());
         }
-/*
-        while (true) {
-            ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
-            for (ConsumerRecord<String, String> record : records) {
-                System.out.println(record.value());
-
-                //Spara datan tillbaka till ett JSONObject
-                JSONObject fetchData = (JSONObject) new JSONParser().parse(record.value());
-
-                //Skriva ut data
-                System.out.println(fetchData.get("id"));
-                System.out.println(fetchData.get("firstName"));
-                System.out.println(fetchData.get("lastName"));
-
-
-            }
-        }
-*/
 
         return users;
     }
+
+    public static void addUser() {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Ange användarens ID: ");
+        Long userId = Long.parseLong(scanner.nextLine());
+
+        System.out.print("Ange förnamn: ");
+        String firstName = scanner.nextLine();
+
+        System.out.print("Ange efternamn: ");
+        String lastName = scanner.nextLine();
+
+        User user = new User();
+        user.setId(userId);
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+
+        JSONObject jsonUser = new JSONObject();
+        jsonUser.put("id", user.getId());
+        jsonUser.put("firstName", user.getFirstName());
+        jsonUser.put("lastName", user.getLastName());
+
+        // Skicka användaren till webb-API för att lägga till
+        sendToWebAPI("addUser", jsonUser);
+    }
+
+    public static void updateUser() {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Ange användarens ID att uppdatera: ");
+        Long userId = Long.parseLong(scanner.nextLine());
+
+        System.out.print("Ange nytt förnamn: ");
+        String newFirstName = scanner.nextLine();
+
+        System.out.print("Ange nytt efternamn: ");
+        String newLastName = scanner.nextLine();
+
+        JSONObject jsonUpdate = new JSONObject();
+        jsonUpdate.put("id", userId);
+        jsonUpdate.put("firstName", newFirstName);
+        jsonUpdate.put("lastName", newLastName);
+
+        // Skicka uppdateringen till webb-API
+        sendToWebAPI("updateUser", jsonUpdate);
+    }
+
+    public static void deleteUser() {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Ange användarens ID att radera: ");
+        Long userId = Long.parseLong(scanner.nextLine());
+        // Konstruera URL för att radera användaren
+        String apiUrl = "http://localhost:8080/api/v1/kafka/deleteUser/" + userId;
+
+        // Använd sendDeleteRequest-metoden för att radera användaren
+        sendDeleteRequest(apiUrl);
+    }
+    public static String sendDeleteRequest(String apiUrl) {
+        String returnResp = "";
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            HttpDelete httpDelete = new HttpDelete(apiUrl);
+
+            // Skicka förfrågan och hantera svaret
+            try (CloseableHttpResponse response = httpClient.execute(httpDelete)) {
+                int statusCode = response.getCode();
+                if (statusCode == HttpStatus.SC_OK) {
+                    System.out.println("Användare raderad framgångsrikt.");
+                } else {
+                    System.out.println("Misslyckades med att radera användaren. Statuskod: " + statusCode);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return returnResp;
+    }
+
+    public static String sendToWebAPI(String apiUrl, JSONObject myObj) {
+        String returnResp = "";
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            HttpPost httpPost = new HttpPost("http://localhost:8080/api/v1/kafka/" + apiUrl);
+
+            if (myObj != null) {
+                // Skapa en JSON-förfrågningskropp
+                String jsonPayload = myObj.toJSONString();
+                StringEntity entity = new StringEntity(jsonPayload, ContentType.APPLICATION_JSON);
+                httpPost.setEntity(entity);
+            }
+
+            // Skicka förfrågan och hantera svaret
+            try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
+                HttpEntity responseEntity = response.getEntity();
+                if (responseEntity != null) {
+                    String responseString = EntityUtils.toString(responseEntity);
+                    System.out.println("Svar från server: " + responseString);
+                    returnResp = responseString;
+                }
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return returnResp;
+    }
+
 }

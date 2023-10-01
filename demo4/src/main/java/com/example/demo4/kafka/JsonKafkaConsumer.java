@@ -20,13 +20,6 @@ public class JsonKafkaConsumer {
     public void consume(User user) {
 
         LOGGER.info(String.format("Json message recieved -> %s", user.toString()));
-/*
-        System.out.println(user);
 
-        System.out.println("Skickar data till DB!");
-        //Skicka data till DB
-        userRepository.save(user);
-
- */
     }
 }
