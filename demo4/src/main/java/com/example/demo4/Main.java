@@ -16,6 +16,7 @@ import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.json.simple.JSONObject;
+import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
 import java.io.IOException;
@@ -47,10 +48,10 @@ public class Main {
 
             //SwitchCase
             switch (userChoise) {
-                case "1": {
+                /*case "1": {
                     userInputForKafka();
                     break;
-                }
+                }*/
                 case "2": {
                     getDataFromKafka("javaJsonGuides");
                     break;
@@ -89,7 +90,7 @@ public class Main {
         /* Writing up the meny */
         System.out.println("Gör dit val!");
         System.out.println("------------");
-        System.out.println("1. Skriv data till Kafka Server");
+        // System.out.println("1. Skriv data till Kafka Server");//
         System.out.println("2. Hämta data från Kafka Server");
         System.out.println("3. Lägg till användare");
         System.out.println("4. Uppdatera användare");
@@ -97,7 +98,7 @@ public class Main {
         System.out.println("0. Avsluta");
     }
 
-      public static void userInputForKafka() {
+     /* public static void userInputForKafka() {
         User user = new User();
 
         //Logik flr att låta användaren mata in data//
@@ -115,7 +116,7 @@ public class Main {
 
         //Skicka Payload till WebAPI via en Request
         sendToWebAPI(myObj);
-    }
+    }*/
 
     public static String sendToWebAPI(JSONObject myObj) {
         String returnResp = "";
@@ -146,6 +147,9 @@ public class Main {
         Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "fetchingGroup");
+
+        props.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class);
+
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         props.put("spring.json.trusted.packages", "*");
