@@ -1,11 +1,19 @@
 package com.example.demo4.service;
-
 import com.example.demo4.payload.User;
 import com.example.demo4.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.Optional;
+
+/**
+ * Detta är en serviceklass som hanterar användaroperationer och interagerar med UserRepository.
+ * Autowired-annotationen används för att injicera en instans av UserRepository i klassen.
+ * Metoden addUser lägger till en användare i databasen.
+ * Metoden updateUser uppdaterar en användare i databasen, kontrollerar om användaren finns och uppdaterar användaren
+ * om den finns.
+ * Metoden deleteUser raderar en användare från databasen, kontrollerar om användaren finns och tar bort användaren.
+ * Metoden getUserById hämtar en användare från databasen om användaren finns baserat på användarens id
+ */
 @Service
 public class UserService {
 
@@ -21,10 +29,9 @@ public class UserService {
     }
 
     public User updateUser(User user) {
-        // Kontrollera om användaren finns
+
         Optional<User> existingUser = userRepository.findById(user.getId());
         if (existingUser.isPresent()) {
-            // Uppdatera användaren om den finns
             return userRepository.save(user);
         } else {
             throw new IllegalArgumentException("User not found");
@@ -32,22 +39,17 @@ public class UserService {
     }
 
     public void deleteUser(Long userId) {
-        // Kontrollera om användaren finns
+
         Optional<User> existingUser = userRepository.findById(userId);
         if (existingUser.isPresent()) {
-            // Ta bort användaren om den finns
             userRepository.deleteById(userId);
         } else {
             throw new IllegalArgumentException("User not found");
         }
     }
 
-   /* public List<User> getAllUsers() {
-        return userRepository.findAll();
-    }*/
-
     public User getUserById(Long userId) {
-        // Hämta användaren om den finns
+
         return userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }

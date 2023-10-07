@@ -1,5 +1,5 @@
 package com.example.demo4.kafka;
-
+/*
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -14,5 +14,5 @@ public class KafkaConsumer {
     public void consume(String message) {
         LOGGER.info(String.format("Message received -> %s", message));
     }
-}
+}*/
 

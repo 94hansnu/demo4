@@ -1,5 +1,4 @@
 package com.example.demo4;
-
 import com.example.demo4.payload.User;
 import org.apache.hc.client5.http.classic.methods.HttpDelete;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
@@ -18,7 +17,6 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.json.simple.JSONObject;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.time.Duration;
@@ -27,12 +25,20 @@ import java.util.Collections;
 import java.util.Properties;
 import java.util.Scanner;
 
+/**
+ * Detta är huvudklassen som innehåller användargränssnittet och interaktion med Kafka och webb-API.
+ * Metoden userMenu visar användarmenyn och switch-case för att hantera användarens val.
+ * Metoden printMenu skriver ut användarmenyn.
+ * Metoden sendToWebAPI skickar data till ett webb-API och returnerar svaret från webb-API
+ * Metoden getDataFromKafka hämtar data från kafka och returnerar listan med användare.
+ * Metoden addUser lägger till en användare i JSON-format och skickar det till webb-API
+ * Metoden updateUser uppdaterar en användare i JSON-format och skickar det till webb-API
+ * Metoden deleteUser raderar en användare och skickar data till webb-API
+ */
 public class Main {
     public static void main(String[] args) throws MalformedURLException, org.json.simple.parser.ParseException {
-        System.out.println("Hello world!");
 
         userMenu();
-
     }
 
     public static void userMenu() {
@@ -48,23 +54,20 @@ public class Main {
 
             //SwitchCase
             switch (userChoise) {
-                /*case "1": {
-                    userInputForKafka();
-                    break;
-                }*/
-                case "2": {
+
+                case "1": {
                     getDataFromKafka("javaJsonGuides");
                     break;
                 }
-                case "3":{
+                case "2":{
                     addUser();
                     break;
                 }
-                case "4": {
+                case "3": {
                     updateUser();
                     break;
                 }
-                case "5": {
+                case "4": {
                     deleteUser();
                     break;
                 }
@@ -87,48 +90,26 @@ public class Main {
     }
 
     public static void printMenu() {
-        /* Writing up the meny */
+
         System.out.println("Gör dit val!");
         System.out.println("------------");
-        // System.out.println("1. Skriv data till Kafka Server");//
-        System.out.println("2. Hämta data från Kafka Server");
-        System.out.println("3. Lägg till användare");
-        System.out.println("4. Uppdatera användare");
-        System.out.println("5. Radera användare");
+        System.out.println("1. Hämta data från Kafka Server");
+        System.out.println("2. Lägg till användare");
+        System.out.println("3. Uppdatera användare");
+        System.out.println("4. Radera användare");
         System.out.println("0. Avsluta");
     }
 
-     /* public static void userInputForKafka() {
-        User user = new User();
-
-        //Logik flr att låta användaren mata in data//
-
-        user.setId(11L);
-        user.setFirstName("Cihan");
-        user.setLastName("Vivera");
-
-        JSONObject myObj = new JSONObject();
-        myObj.put("id", user.getId());
-        myObj.put("firstName", user.getFirstName());
-        myObj.put("lastName", user.getLastName());
-
-
-
-        //Skicka Payload till WebAPI via en Request
-        sendToWebAPI(myObj);
-    }*/
 
     public static String sendToWebAPI(JSONObject myObj) {
         String returnResp = "";
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             HttpPost httpPost = new HttpPost("http://localhost:8080/api/v1/kafka/publish");
 
-            // Skapa en JSON-förfrågningskropp
             String jsonPayload = myObj.toJSONString();
             StringEntity entity = new StringEntity(jsonPayload, ContentType.APPLICATION_JSON);
             httpPost.setEntity(entity);
 
-            // Skicka förfrågan och hantera svaret
             try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
                 HttpEntity responseEntity = response.getEntity();
                 if (responseEntity != null) {
@@ -158,13 +139,10 @@ public class Main {
 
         consumer.assign(Collections.singletonList(new TopicPartition(topicName, 0)));
 
-        //Gå till början av Topic
         consumer.seekToBeginning(consumer.assignment());
 
-        //Create User list
         ArrayList<User> users = new ArrayList<User>();
 
-        //WhileLoop osm hämtar i JSON format
         while (true) {
             ConsumerRecords<String, User> records = consumer.poll(Duration.ofMillis(100));
             if (records.isEmpty()) continue;
@@ -203,7 +181,6 @@ public class Main {
         jsonUser.put("firstName", user.getFirstName());
         jsonUser.put("lastName", user.getLastName());
 
-        // Skicka användaren till webb-API för att lägga till
         sendToWebAPI("addUser", jsonUser);
     }
 
@@ -224,7 +201,6 @@ public class Main {
         jsonUpdate.put("firstName", newFirstName);
         jsonUpdate.put("lastName", newLastName);
 
-        // Skicka uppdateringen till webb-API
         sendToWebAPI("updateUser", jsonUpdate);
     }
 
@@ -233,10 +209,7 @@ public class Main {
 
         System.out.print("Ange användarens ID att radera: ");
         Long userId = Long.parseLong(scanner.nextLine());
-        // Konstruera URL för att radera användaren
         String apiUrl = "http://localhost:8080/api/v1/kafka/deleteUser/" + userId;
-
-        // Använd sendDeleteRequest-metoden för att radera användaren
         sendDeleteRequest(apiUrl);
     }
     public static String sendDeleteRequest(String apiUrl) {
@@ -244,7 +217,6 @@ public class Main {
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             HttpDelete httpDelete = new HttpDelete(apiUrl);
 
-            // Skicka förfrågan och hantera svaret
             try (CloseableHttpResponse response = httpClient.execute(httpDelete)) {
                 int statusCode = response.getCode();
                 if (statusCode == HttpStatus.SC_OK) {
@@ -271,7 +243,6 @@ public class Main {
                 httpPost.setEntity(entity);
             }
 
-            // Skicka förfrågan och hantera svaret
             try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
                 HttpEntity responseEntity = response.getEntity();
                 if (responseEntity != null) {

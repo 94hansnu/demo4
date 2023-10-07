@@ -3,6 +3,12 @@ package com.example.demo4.payload;
 
 import jakarta.persistence.*;
 
+/**
+ * Detta är en JPA-entitetsklass som representerar användarinformation och mappar till en databastabell.
+ * Attribut för användarens unika identifierare.
+ * Getters och setters metoder för samtliga attribut
+ * toString-metod för att enkelt representera User-objektet som en sträng.
+ */
 @Entity
 @Table (name = "users")
 public class User {

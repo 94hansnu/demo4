@@ -1,5 +1,4 @@
 package com.example.demo4.kafka;
-
 import com.example.demo4.payload.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +8,17 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 
+/**
+ * Detta är en Kafka Producer-tjänst som används för att skicka JSON-data till ett Kafka-ämne.
+ * Metoden sendMessage skickar ett JSON-meddelande till Kafka, loggar det skickade händelsen och skapar ett meddelande
+ * och skickar det till Kafka.
+ * Metoden sendAddUserEvent skickar en händelse om att en ny användare har lagts till, loggar händelsen och skapar
+ * ett meddelande och skickar det till kafka.
+ * Metoden sendUpdateEvent skickar en uppdateringshändelse om en användare, loggar händelsen och skapar ett meddelande
+ * och skickar det till Kafka.
+ * Metoden sendDeleteEvent skicka en raderingshändelse för en användare, loggar händelsen och skapar ett meddelande
+ * och skickar det till Kafka.
+ */
 @Service
 public class JsonKafkaProducer {
 
@@ -30,10 +40,9 @@ public class JsonKafkaProducer {
     public void sendAddUserEvent(User data) {
         LOGGER.info("Sending add user event for user: " + data.toString());
 
-        // Skapa ett meddelande för att indikera att en ny användare har lagts till och skicka det till Kafka
         Message<User> message = MessageBuilder
                 .withPayload(data)
-                .setHeader(KafkaHeaders.TOPIC, "javaJsonGuides") // Byt ut "addUserTopic" mot ditt faktiska ämnesnamn
+                .setHeader(KafkaHeaders.TOPIC, "javaJsonGuides")
                 .build();
 
         kafkaTemplate.send(message);
@@ -42,10 +51,9 @@ public class JsonKafkaProducer {
     public void sendUpdateEvent(User data) {
         LOGGER.info("Sending update event for user: " + data.toString());
 
-        // Skapa ett meddelande för uppdatering och skicka det till Kafka
         Message<User> message = MessageBuilder
                 .withPayload(data)
-                .setHeader(KafkaHeaders.TOPIC, "javaJsonGuides") // Byt ut "updateUserTopic" mot ditt faktiska ämnesnamn
+                .setHeader(KafkaHeaders.TOPIC, "javaJsonGuides")
                 .build();
 
         kafkaTemplate.send(message);
@@ -54,10 +62,9 @@ public class JsonKafkaProducer {
     public void sendDeleteEvent(Long userId) {
         LOGGER.info("Sending delete event for user: " + userId);
 
-        // Skapa ett meddelande för radering och skicka det till Kafka
         Message<Long> message = MessageBuilder
                 .withPayload(userId)
-                .setHeader(KafkaHeaders.TOPIC, "javaJsonGuides") // Byt ut "deleteUserTopic" mot ditt faktiska ämnesnamn
+                .setHeader(KafkaHeaders.TOPIC, "javaJsonGuides")
                 .build();
 
         kafkaTemplate.send(message);
