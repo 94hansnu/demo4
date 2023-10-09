@@ -53,7 +53,8 @@ public class Main {
             switch (userChoise) {
 
                 case "1": {
-                   ArrayList<User> users = getDataFromKafka("javaJsonGuides");
+                   List<User> users = getDataFromKafka("javaJsonGuides");
+                   displayUserInformation(users);
                     break;
                 }
                 case "2":{
@@ -84,6 +85,15 @@ public class Main {
             }
 
         } while (!userChoise.equals("0"));
+    }
+    public static void displayUserInformation(List<User> users) {
+        System.out.println("-----------------------------");
+        for (User user : users) {
+            System.out.println("User ID: " + user.getId());
+            System.out.println("Förnamn: " + user.getFirstName());
+            System.out.println("Efternamn: " + user.getLastName());
+            System.out.println("----------------------------");
+        }
     }
 
     public static void printMenu() {
@@ -130,7 +140,7 @@ public class Main {
 
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-        props.put("spring.json.trusted.packages", "*");
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
 
         Consumer<String, User> consumer = new KafkaConsumer<>(props);
 
@@ -149,9 +159,9 @@ public class Main {
             break;
         }
 
-        /*for (User user : users) {
+        for (User user : users) {
             System.out.println(user.getFirstName());
-        }*/
+        }
 
         return users;
     }
@@ -178,7 +188,7 @@ public class Main {
         jsonUser.put("firstName", user.getFirstName());
         jsonUser.put("lastName", user.getLastName());
 
-        sendToWebAPI("addUser", jsonUser);
+        sendToWebAPI(jsonUser);
     }
 
     public static void updateUser() {
@@ -193,12 +203,13 @@ public class Main {
         System.out.print("Ange nytt efternamn: ");
         String newLastName = scanner.nextLine();
 
+
         JSONObject jsonUpdate = new JSONObject();
         jsonUpdate.put("id", userId);
         jsonUpdate.put("firstName", newFirstName);
         jsonUpdate.put("lastName", newLastName);
 
-        sendToWebAPI("updateUser", jsonUpdate);
+        sendToWebAPI(jsonUpdate);
     }
 
     public static void deleteUser() {
