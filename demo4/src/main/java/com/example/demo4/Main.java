@@ -20,10 +20,7 @@ import org.springframework.kafka.support.serializer.JsonDeserializer;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Properties;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * Detta är huvudklassen som innehåller användargränssnittet och interaktion med Kafka och webb-API.
@@ -56,7 +53,7 @@ public class Main {
             switch (userChoise) {
 
                 case "1": {
-                    getDataFromKafka("javaJsonGuides");
+                   ArrayList<User> users = getDataFromKafka("javaJsonGuides");
                     break;
                 }
                 case "2":{
@@ -141,7 +138,7 @@ public class Main {
 
         consumer.seekToBeginning(consumer.assignment());
 
-        ArrayList<User> users = new ArrayList<User>();
+        ArrayList<User> users = new ArrayList<>();
 
         while (true) {
             ConsumerRecords<String, User> records = consumer.poll(Duration.ofMillis(100));
@@ -152,9 +149,9 @@ public class Main {
             break;
         }
 
-        for (User user : users) {
+        /*for (User user : users) {
             System.out.println(user.getFirstName());
-        }
+        }*/
 
         return users;
     }
