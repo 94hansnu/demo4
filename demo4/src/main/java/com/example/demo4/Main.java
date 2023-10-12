@@ -53,8 +53,12 @@ public class Main {
             switch (userChoise) {
 
                 case "1": {
-                   List<User> users = getDataFromKafka("javaJsonGuides");
-                   displayUserInformation(users);
+                    List<User> users = getDataFromKafka("javaJsonGuides");
+                    if(users.size() > 0) {
+                        displayUserInformation(users);
+                    } else {
+                        noDataDisplay();
+                    }
                     break;
                 }
                 case "2":{
@@ -85,6 +89,12 @@ public class Main {
             }
 
         } while (!userChoise.equals("0"));
+    }
+    static void noDataDisplay() {
+        System.out.println("-----------------------------");
+        System.out.println("Finns ingen data i servern just nu ;)");
+        System.out.println("-----------------------------");
+
     }
     public static void displayUserInformation(List<User> users) {
         System.out.println("-----------------------------");
@@ -151,10 +161,12 @@ public class Main {
         ArrayList<User> users = new ArrayList<>();
 
         while (true) {
-            ConsumerRecords<String, User> records = consumer.poll(Duration.ofMillis(100));
-            if (records.isEmpty()) continue;
+            ConsumerRecords<String, User> records = consumer.poll(Duration.ofSeconds(5));
+            if (records.isEmpty()) break;
             for (ConsumerRecord<String, User> record : records) {
-                users.add(record.value());
+                if (record.value() instanceof User) {
+                    users.add(record.value());
+                }
             }
             break;
         }
